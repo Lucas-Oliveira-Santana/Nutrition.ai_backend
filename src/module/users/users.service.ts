@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/PrismaService';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -43,6 +44,11 @@ export class UsersService {
           id,
         },
       });
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.CONFLICT);
+      }
+
       return user;
     } catch (err) {
       throw err;
@@ -72,7 +78,22 @@ export class UsersService {
     }
   }
 
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.CONFLICT);
+    }
+
+    return await this.prismaService.user.update({
+      data: updateUserDto,
+      where: {
+        id,
+      },
+    });
+  }
 }
